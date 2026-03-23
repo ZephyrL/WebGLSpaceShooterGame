@@ -1,6 +1,5 @@
 import { aabbOverlap } from '../engine/collision';
-import { PLAYER_CONFIG } from '../config/playerConfig';
-import { POWERUP_CONFIG } from '../config/powerupConfig';
+import { getPlayerConfig, getPowerupConfig } from '../dev/configBridge';
 import { Player } from './player';
 import { PlayerBulletSystem } from './playerBullets';
 import { EnemyBulletSystem } from './enemyBullets';
@@ -60,8 +59,8 @@ export class CollisionManager {
     if (!player.isInvincible()) {
       const px = player.mesh.position.x;
       const py = player.mesh.position.y;
-      const phx = PLAYER_CONFIG.halfExtents.x;
-      const phy = PLAYER_CONFIG.halfExtents.y;
+      const phx = getPlayerConfig().halfExtents.x;
+      const phy = getPlayerConfig().halfExtents.y;
 
       enemyBullets.pool.forEachActive((bullet) => {
         if (player.isInvincible()) return; // became invincible from prior hit this tick
@@ -81,8 +80,8 @@ export class CollisionManager {
     if (!player.isInvincible()) {
       const px = player.mesh.position.x;
       const py = player.mesh.position.y;
-      const phx = PLAYER_CONFIG.halfExtents.x;
-      const phy = PLAYER_CONFIG.halfExtents.y;
+      const phx = getPlayerConfig().halfExtents.x;
+      const phy = getPlayerConfig().halfExtents.y;
 
       enemies.pool.forEachActive((enemy) => {
         if (player.isInvincible()) return;
@@ -105,10 +104,10 @@ export class CollisionManager {
     {
       const px = player.mesh.position.x;
       const py = player.mesh.position.y;
-      const phx = PLAYER_CONFIG.halfExtents.x;
-      const phy = PLAYER_CONFIG.halfExtents.y;
-      const puhx = POWERUP_CONFIG.halfExtents.x;
-      const puhy = POWERUP_CONFIG.halfExtents.y;
+      const phx = getPlayerConfig().halfExtents.x;
+      const phy = getPlayerConfig().halfExtents.y;
+      const puhx = getPowerupConfig().halfExtents.x;
+      const puhy = getPowerupConfig().halfExtents.y;
 
       powerups.pool.forEachActive((pickup) => {
         const pux = pickup.mesh.position.x;

@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from '../config/gameConfig';
+import { getGameConfig } from '../dev/configBridge';
 
 /**
  * PauseMenu — modal overlay shown when the game is paused.
@@ -32,7 +32,7 @@ export class PauseMenu {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       background: rgba(0, 0, 0, 0.65);
-      z-index: ${GAME_CONFIG.zIndex.pauseMenu};
+      z-index: ${getGameConfig().zIndex.pauseMenu};
       font-family: 'Segoe UI', Arial, sans-serif;
     `;
 

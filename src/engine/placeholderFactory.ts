@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { GAME_CONFIG } from '../config/gameConfig';
+import { getGameConfig } from '../dev/configBridge';
 
 /**
  * Placeholder mesh factory — creates simple Three.js geometries
@@ -98,7 +98,7 @@ export class DebugLabelSystem {
   private camera: THREE.Camera | null = null;
 
   constructor() {
-    this.enabled = GAME_CONFIG.debug.showLabels;
+    this.enabled = getGameConfig().debug.showLabels;
     this.container = document.createElement('div');
     this.container.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden;';
     document.getElementById('app')?.appendChild(this.container);

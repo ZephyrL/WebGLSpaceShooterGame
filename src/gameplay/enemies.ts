@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { ObjectPool, Poolable } from '../engine/objectPool';
-import { GAME_CONFIG } from '../config/gameConfig';
-import { EnemyType, ENEMY_CONFIG, EnemyStats } from '../config/enemyConfig';
+import { getGameConfig, getEnemyConfig } from '../dev/configBridge';
+import type { EnemyType, EnemyStats } from '../dev/configBridge';
 import { EnemyBulletSystem } from './enemyBullets';
 import {
   createDroneMesh,
@@ -37,7 +37,7 @@ function createEnemy(_index: number): Enemy {
     mesh: createDroneMesh(),
     type: 'drone',
     health: 1,
-    stats: ENEMY_CONFIG.drone,
+    stats: getEnemyConfig().drone,
     elapsed: 0,
     spawnX: 0,
     fireCooldown: 0,
@@ -52,7 +52,7 @@ export class EnemySystem {
   private playerY = 0;
 
   constructor() {
-    this.pool = new ObjectPool<Enemy>(createEnemy, GAME_CONFIG.poolSizes.enemies);
+    this.pool = new ObjectPool<Enemy>(createEnemy, getGameConfig().poolSizes.enemies);
   }
 
   attachToScene(scene: THREE.Scene): void {
@@ -70,7 +70,7 @@ export class EnemySystem {
     const enemy = this.pool.acquire();
     if (!enemy) return;
 
-    const stats = ENEMY_CONFIG[type];
+    const stats = getEnemyConfig()[type];
     enemy.type = type;
     enemy.health = stats.health;
     enemy.stats = stats;
@@ -91,7 +91,7 @@ export class EnemySystem {
 
   /** Update all active enemies: move, fire, deactivate off-screen. */
   update(dt: number, bulletSystem: EnemyBulletSystem): void {
-    const halfH = GAME_CONFIG.playArea.height / 2;
+    const halfH = getGameConfig().playArea.height / 2;
 
     this.pool.forEachActive((enemy) => {
       enemy.elapsed += dt;

@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from '../config/gameConfig';
+import { getGameConfig } from '../dev/configBridge';
 import { SceneManager } from './sceneManager';
 
 /**
@@ -38,7 +38,7 @@ export class GameLoop {
   private tick = (now: number): void => {
     if (!this.running) return;
 
-    const dt = GAME_CONFIG.fixedTimestep;
+    const dt = getGameConfig().fixedTimestep;
     let elapsed = (now - this.lastTime) / 1000; // seconds
     this.lastTime = now;
 

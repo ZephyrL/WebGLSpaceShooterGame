@@ -1,7 +1,6 @@
 import * as THREE from 'three';
-import { PLAYER_CONFIG } from '../config/playerConfig';
-import { POWERUP_CONFIG, PowerupType } from '../config/powerupConfig';
-import { GAME_CONFIG } from '../config/gameConfig';
+import { getPlayerConfig, getPowerupConfig, getGameConfig } from '../dev/configBridge';
+import type { PowerupType } from '../dev/configBridge';
 import { InputSystem } from '../engine/input';
 import { PlayerBulletSystem } from './playerBullets';
 import { createPlayerMesh } from '../engine/placeholderFactory';
@@ -33,13 +32,13 @@ export class Player {
 
   constructor() {
     this.mesh = createPlayerMesh();
-    this.maxHealth = PLAYER_CONFIG.startingHealth;
+    this.maxHealth = getPlayerConfig().startingHealth;
     this.health = this.maxHealth;
-    this.fireInterval = 1 / PLAYER_CONFIG.fireRate;
+    this.fireInterval = 1 / getPlayerConfig().fireRate;
 
     this.mesh.position.set(
-      PLAYER_CONFIG.initialPosition.x,
-      PLAYER_CONFIG.initialPosition.y,
+      getPlayerConfig().initialPosition.x,
+      getPlayerConfig().initialPosition.y,
       0,
     );
   }
@@ -54,8 +53,8 @@ export class Player {
     this.powerupTimer = 0;
     this.mesh.visible = true;
     this.mesh.position.set(
-      PLAYER_CONFIG.initialPosition.x,
-      PLAYER_CONFIG.initialPosition.y,
+      getPlayerConfig().initialPosition.x,
+      getPlayerConfig().initialPosition.y,
       0,
     );
   }
@@ -69,9 +68,9 @@ export class Player {
   }
 
   private handleMovement(dt: number, input: InputSystem): void {
-    const speed = PLAYER_CONFIG.moveSpeed;
-    const halfW = GAME_CONFIG.playArea.width / 2;
-    const halfH = GAME_CONFIG.playArea.height / 2;
+    const speed = getPlayerConfig().moveSpeed;
+    const halfW = getGameConfig().playArea.width / 2;
+    const halfH = getGameConfig().playArea.height / 2;
 
     // Pointer/touch drag takes priority
     const pointer = input.getPointerWorldPosition();
@@ -114,11 +113,11 @@ export class Player {
       const y = this.mesh.position.y + 0.8; // fire from nose
 
       const damage = this.activePowerup === 'damage_boost'
-        ? PLAYER_CONFIG.bulletDamage * POWERUP_CONFIG.damageBoostMultiplier
-        : PLAYER_CONFIG.bulletDamage;
+        ? getPlayerConfig().bulletDamage * getPowerupConfig().damageBoostMultiplier
+        : getPlayerConfig().bulletDamage;
 
       if (this.activePowerup === 'multishot') {
-        bulletSystem.fireMulti(x, y, damage, POWERUP_CONFIG.multishotBulletCount, PLAYER_CONFIG.multiShotOffset);
+        bulletSystem.fireMulti(x, y, damage, getPowerupConfig().multishotBulletCount, getPlayerConfig().multiShotOffset);
       } else {
         bulletSystem.fire(x, y, damage);
       }
@@ -169,7 +168,7 @@ export class Player {
 
     // Start invincibility
     this.invincible = true;
-    this.invincibilityTimer = PLAYER_CONFIG.invincibilityDuration;
+    this.invincibilityTimer = getPlayerConfig().invincibilityDuration;
     this.flashTimer = 0.1;
     return false;
   }
@@ -185,7 +184,7 @@ export class Player {
       return;
     }
 
-    const stats = POWERUP_CONFIG.types[type];
+    const stats = getPowerupConfig().types[type];
     this.activePowerup = type;
     this.powerupTimer = stats.duration;
 

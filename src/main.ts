@@ -48,6 +48,14 @@ function main(): void {
   // --- Start the game ---
   sceneManager.switchTo('start');
   gameLoop.start();
+
+  // --- Dev panel (only in dev mode) ---
+  if (import.meta.env.DEV) {
+    import('./dev/devBootstrap').then(({ initDevPanel }) => {
+      initDevPanel(battleScene, cameraSystem);
+      console.log('[Dev] Developer panel loaded');
+    });
+  }
 }
 
 main();

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { ObjectPool, Poolable } from '../engine/objectPool';
-import { GAME_CONFIG } from '../config/gameConfig';
-import { POWERUP_CONFIG, PowerupType } from '../config/powerupConfig';
+import { getGameConfig, getPowerupConfig } from '../dev/configBridge';
+import type { PowerupType } from '../dev/configBridge';
 import {
   createMultishotPickupMesh,
   createDamageBoostPickupMesh,
@@ -35,7 +35,7 @@ export class PowerupSystem {
   public pool: ObjectPool<PowerupPickup>;
 
   constructor() {
-    this.pool = new ObjectPool<PowerupPickup>(createPickup, GAME_CONFIG.poolSizes.powerups);
+    this.pool = new ObjectPool<PowerupPickup>(createPickup, getGameConfig().poolSizes.powerups);
   }
 
   attachToScene(scene: THREE.Scene): void {
@@ -47,7 +47,7 @@ export class PowerupSystem {
    * Call this when an enemy is destroyed.
    */
   tryDrop(x: number, y: number): void {
-    if (Math.random() > POWERUP_CONFIG.dropChance) return;
+    if (Math.random() > getPowerupConfig().dropChance) return;
 
     const pickup = this.pool.acquire();
     if (!pickup) return;
@@ -68,10 +68,10 @@ export class PowerupSystem {
 
   /** Update all active pickups: drift downward, cleanup off-screen. */
   update(dt: number): void {
-    const halfH = GAME_CONFIG.playArea.height / 2;
+    const halfH = getGameConfig().playArea.height / 2;
 
     this.pool.forEachActive((pickup) => {
-      pickup.mesh.position.y -= POWERUP_CONFIG.driftSpeed * dt;
+      pickup.mesh.position.y -= getPowerupConfig().driftSpeed * dt;
 
       // Spin for visual interest
       pickup.mesh.rotation.y += dt * 3;

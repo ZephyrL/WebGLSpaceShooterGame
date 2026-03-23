@@ -1,5 +1,5 @@
-import { GAME_CONFIG } from '../config/gameConfig';
-import { WAVE_CONFIG, WaveEntry } from '../config/waveConfig';
+import { getGameConfig, getWaveConfig } from '../dev/configBridge';
+import type { WaveEntry } from '../dev/configBridge';
 import { EnemySystem } from './enemies';
 
 /**
@@ -60,7 +60,7 @@ export class WaveManager {
     }
 
     // Check if current wave is complete (all entries spawned + all enemies gone)
-    const wave = WAVE_CONFIG[this.currentWaveIndex];
+    const wave = getWaveConfig()[this.currentWaveIndex];
     if (!wave) {
       this.allWavesComplete = true;
       return;
@@ -95,8 +95,8 @@ export class WaveManager {
   }
 
   private spawnEnemy(entry: WaveEntry, enemySystem: EnemySystem): void {
-    const halfW = GAME_CONFIG.playArea.width / 2;
-    const halfH = GAME_CONFIG.playArea.height / 2;
+    const halfW = getGameConfig().playArea.width / 2;
+    const halfH = getGameConfig().playArea.height / 2;
 
     // Random X within play area, Y at top
     const x = (Math.random() * (halfW * 2 - 2)) - halfW + 1;
@@ -112,7 +112,7 @@ export class WaveManager {
     this.spawnTimer = 0;
     this.totalSpawnedThisWave = 0;
 
-    if (this.currentWaveIndex >= WAVE_CONFIG.length) {
+    if (this.currentWaveIndex >= getWaveConfig().length) {
       this.allWavesComplete = true;
       return;
     }

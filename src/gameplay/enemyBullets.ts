@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { ObjectPool, Poolable } from '../engine/objectPool';
-import { GAME_CONFIG } from '../config/gameConfig';
-import { ENEMY_BULLET_SPEED } from '../config/enemyConfig';
+import { getGameConfig, getEnemyBulletSpeed } from '../dev/configBridge';
 import { createEnemyBulletMesh } from '../engine/placeholderFactory';
 
 /** A single enemy bullet entity. */
@@ -26,7 +25,7 @@ export class EnemyBulletSystem {
   public pool: ObjectPool<EnemyBullet>;
 
   constructor() {
-    this.pool = new ObjectPool<EnemyBullet>(createBullet, GAME_CONFIG.poolSizes.enemyBullets);
+    this.pool = new ObjectPool<EnemyBullet>(createBullet, getGameConfig().poolSizes.enemyBullets);
   }
 
   attachToScene(scene: THREE.Scene): void {
@@ -46,9 +45,9 @@ export class EnemyBulletSystem {
 
   /** Update all active bullets: move, deactivate off-screen. */
   update(dt: number): void {
-    const halfW = GAME_CONFIG.playArea.width / 2;
-    const halfH = GAME_CONFIG.playArea.height / 2;
-    const speed = ENEMY_BULLET_SPEED;
+    const halfW = getGameConfig().playArea.width / 2;
+    const halfH = getGameConfig().playArea.height / 2;
+    const speed = getEnemyBulletSpeed();
 
     this.pool.forEachActive((bullet) => {
       bullet.mesh.position.x += bullet.dirX * speed * dt;

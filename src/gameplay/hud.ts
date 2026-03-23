@@ -1,4 +1,5 @@
-import { POWERUP_CONFIG, PowerupType } from '../config/powerupConfig';
+import { getPowerupConfig } from '../dev/configBridge';
+import type { PowerupType } from '../dev/configBridge';
 
 /**
  * HUD — HTML/CSS overlay for score, health, power-up indicator,
@@ -146,7 +147,7 @@ export class HUD {
       return;
     }
     this.powerupEl.style.display = '';
-    const name = POWERUP_CONFIG.types[info.type].displayName;
+    const name = getPowerupConfig().types[info.type].displayName;
     this.powerupEl.textContent = `${name}: ${info.remaining.toFixed(1)}s`;
   }
 

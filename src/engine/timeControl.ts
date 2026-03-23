@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from '../config/gameConfig';
+import { getGameConfig } from '../dev/configBridge';
 
 /**
  * TimeControl — centralised time management for the game.
@@ -16,7 +16,7 @@ export class TimeControl {
   private defaultTimeScale: number;
 
   constructor() {
-    this.defaultTimeScale = GAME_CONFIG.timeControl.defaultTimeScale;
+    this.defaultTimeScale = getGameConfig().timeControl.defaultTimeScale;
     this.timeScale = this.defaultTimeScale;
   }
 

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { GAME_CONFIG } from '../config/gameConfig';
+import { getGameConfig } from '../dev/configBridge';
 
 /**
  * Dual-camera system for the battle scene.
@@ -31,7 +31,7 @@ export class CameraSystem {
   private transitionCamera: THREE.PerspectiveCamera;
 
   constructor() {
-    const { height } = GAME_CONFIG.playArea;
+    const { height } = getGameConfig().playArea;
     const aspect = window.innerWidth / window.innerHeight;
     const viewHeight = height / 2;
     const viewWidth = viewHeight * aspect;
@@ -57,7 +57,7 @@ export class CameraSystem {
   }
 
   private onResize = (): void => {
-    const { height } = GAME_CONFIG.playArea;
+    const { height } = getGameConfig().playArea;
     const aspect = window.innerWidth / window.innerHeight;
     const viewHeight = height / 2;
     const viewWidth = viewHeight * aspect;
@@ -141,6 +141,18 @@ export class CameraSystem {
 
   private easeInOut(t: number): number {
     return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+  }
+
+  /** Set gameplay camera position directly (dev panel). */
+  setGameplayPosition(x: number, y: number, z: number): void {
+    this.gameplayCamera.position.set(x, y, z);
+    this.gameplayCamera.updateProjectionMatrix();
+  }
+
+  /** Set gameplay camera lookAt target (dev panel). */
+  setGameplayLookAt(x: number, y: number, z: number): void {
+    this.gameplayCamera.lookAt(x, y, z);
+    this.gameplayCamera.updateProjectionMatrix();
   }
 
   dispose(): void {

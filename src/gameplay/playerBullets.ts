@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { ObjectPool, Poolable } from '../engine/objectPool';
-import { GAME_CONFIG } from '../config/gameConfig';
-import { PLAYER_CONFIG } from '../config/playerConfig';
+import { getGameConfig, getPlayerConfig } from '../dev/configBridge';
 import { createPlayerBulletMesh } from '../engine/placeholderFactory';
 
 /** A single player bullet entity. */
@@ -15,7 +14,7 @@ function createBullet(_index: number): PlayerBullet {
   return {
     active: false,
     mesh: createPlayerBulletMesh(),
-    damage: PLAYER_CONFIG.bulletDamage,
+    damage: getPlayerConfig().bulletDamage,
   };
 }
 
@@ -28,7 +27,7 @@ export class PlayerBulletSystem {
   private isBoosted = false;
 
   constructor() {
-    this.pool = new ObjectPool<PlayerBullet>(createBullet, GAME_CONFIG.poolSizes.playerBullets);
+    this.pool = new ObjectPool<PlayerBullet>(createBullet, getGameConfig().poolSizes.playerBullets);
   }
 
   attachToScene(scene: THREE.Scene): void {
@@ -57,8 +56,8 @@ export class PlayerBulletSystem {
 
   /** Update all active bullets: move upward, deactivate off-screen. */
   update(dt: number): void {
-    const halfH = GAME_CONFIG.playArea.height / 2;
-    const speed = PLAYER_CONFIG.bulletSpeed;
+    const halfH = getGameConfig().playArea.height / 2;
+    const speed = getPlayerConfig().bulletSpeed;
 
     this.pool.forEachActive((bullet) => {
       bullet.mesh.position.y += speed * dt;

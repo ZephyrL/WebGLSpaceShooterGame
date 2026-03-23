@@ -5,8 +5,7 @@ import { Renderer } from '../engine/renderer';
 import { CameraSystem } from '../engine/cameraSystem';
 import { InputSystem } from '../engine/input';
 import { TimeControl } from '../engine/timeControl';
-import { GAME_CONFIG } from '../config/gameConfig';
-import { PLAYER_CONFIG } from '../config/playerConfig';
+import { getGameConfig, getPlayerConfig } from '../dev/configBridge';
 import { Player } from './player';
 import { PlayerBulletSystem } from './playerBullets';
 import { EnemyBulletSystem } from './enemyBullets';
@@ -160,7 +159,7 @@ export class BattleScene implements GameScene {
 
     // HUD
     this.hud.attach();
-    this.hud.reset(PLAYER_CONFIG.startingHealth);
+    this.hud.reset(getPlayerConfig().startingHealth);
     this.hud.show();
 
     // Start waves
@@ -270,8 +269,8 @@ export class BattleScene implements GameScene {
   // --- Starfield ---
 
   private createStarfield(): void {
-    const { count } = GAME_CONFIG.starfield;
-    const { width, height } = GAME_CONFIG.playArea;
+    const { count } = getGameConfig().starfield;
+    const { width, height } = getGameConfig().playArea;
 
     const geometry = new THREE.BufferGeometry();
     this.starPositions = new Float32Array(count * 3);
@@ -295,8 +294,8 @@ export class BattleScene implements GameScene {
   }
 
   private updateStarfield(dt: number): void {
-    const speed = GAME_CONFIG.starfield.speed;
-    const halfH = GAME_CONFIG.playArea.height * 0.75;
+    const speed = getGameConfig().starfield.speed;
+    const halfH = getGameConfig().playArea.height * 0.75;
 
     for (let i = 0; i < this.starPositions.length / 3; i++) {
       const idx = i * 3 + 1;
@@ -386,7 +385,7 @@ export class BattleScene implements GameScene {
     this.enemies.releaseAll();
     this.powerups.releaseAll();
 
-    this.hud.reset(PLAYER_CONFIG.startingHealth);
+    this.hud.reset(getPlayerConfig().startingHealth);
     this.waveManager.start();
     this.timeControl.reset();
     this.hud.showPauseButton();
@@ -411,5 +410,34 @@ export class BattleScene implements GameScene {
     if (!this.flashOverlay) return;
     this.flashOverlay.style.opacity = '0.8';
     this.flashTimer = 0.3;
+  }
+
+  // --- Dev Mode Hooks ---
+
+  /** Expose system references for the dev panel (dev mode only). */
+  getDevContext() {
+    return {
+      timeControl: this.timeControl,
+      hud: this.hud,
+      player: this.player,
+      enemies: this.enemies,
+      playerBullets: this.playerBullets,
+      enemyBullets: this.enemyBullets,
+      powerups: this.powerups,
+      waveManager: this.waveManager,
+    };
+  }
+
+  /** Trigger a bomb effect: flash + clear all enemies and enemy bullets. */
+  triggerBomb(): void {
+    this.enemies.pool.forEachActive((enemy) => {
+      this.enemies.pool.release(enemy);
+    });
+    this.enemyBullets.releaseAll();
+    this.cameraSystem.transitionToCinematic(0.7);
+    setTimeout(() => {
+      this.cameraSystem.transitionToGameplay(0.7);
+    }, 1500);
+    this.showFlash();
   }
 }

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { GAME_CONFIG } from '../config/gameConfig';
+import { getGameConfig } from '../dev/configBridge';
 
 /**
  * Input system — tracks keyboard, mouse drag, and touch drag state.
@@ -121,7 +121,7 @@ export class InputSystem {
   private updatePointerFromScreen(screenX: number, screenY: number): void {
     if (!this.camera || !this.canvas) return;
 
-    const { width, height } = GAME_CONFIG.playArea;
+    const { width, height } = getGameConfig().playArea;
 
     // Normalised device coordinates (-1 to +1)
     const ndcX = (screenX / this.canvas.clientWidth) * 2 - 1;
