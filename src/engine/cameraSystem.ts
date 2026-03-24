@@ -143,16 +143,16 @@ export class CameraSystem {
     return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
   }
 
-  /** Set gameplay camera position directly (dev panel). */
-  setGameplayPosition(x: number, y: number, z: number): void {
-    this.gameplayCamera.position.set(x, y, z);
-    this.gameplayCamera.updateProjectionMatrix();
+  /** Set cinematic camera position directly (dev panel). */
+  setCinematicPosition(x: number, y: number, z: number): void {
+    this.cinematicCamera.position.set(x, y, z);
+    this.cinematicCamera.updateProjectionMatrix();
   }
 
-  /** Set gameplay camera lookAt target (dev panel). */
-  setGameplayLookAt(x: number, y: number, z: number): void {
-    this.gameplayCamera.lookAt(x, y, z);
-    this.gameplayCamera.updateProjectionMatrix();
+  /** Set cinematic camera lookAt target (dev panel). */
+  setCinematicLookAt(x: number, y: number, z: number): void {
+    this.cinematicCamera.lookAt(x, y, z);
+    this.cinematicCamera.updateProjectionMatrix();
   }
 
   dispose(): void {

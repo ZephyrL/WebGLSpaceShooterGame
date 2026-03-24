@@ -90,3 +90,14 @@ export class ObjectPool<T extends Poolable> {
     this.scene = null;
   }
 }
+
+/** Throttled pool-exhaustion warning (one message per second per key). */
+const _lastWarnTime = new Map<string, number>();
+export function warnPoolExhausted(systemName: string): void {
+  const now = performance.now();
+  const last = _lastWarnTime.get(systemName) ?? 0;
+  if (now - last >= 1000) {
+    _lastWarnTime.set(systemName, now);
+    console.warn(`[${systemName}] pool exhausted — object not spawned`);
+  }
+}

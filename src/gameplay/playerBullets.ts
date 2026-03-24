@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { ObjectPool, Poolable } from '../engine/objectPool';
+import { ObjectPool, Poolable, warnPoolExhausted } from '../engine/objectPool';
 import { getGameConfig, getPlayerConfig } from '../dev/configBridge';
 import { createPlayerBulletMesh } from '../engine/placeholderFactory';
 
@@ -37,7 +37,7 @@ export class PlayerBulletSystem {
   /** Fire a bullet from the given world position. */
   fire(x: number, y: number, damage: number): void {
     const bullet = this.pool.acquire();
-    if (!bullet) return;
+    if (!bullet) { warnPoolExhausted('PlayerBullets'); return; }
     bullet.mesh.position.set(x, y, 0);
     bullet.damage = damage;
   }

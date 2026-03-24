@@ -21,7 +21,7 @@ export class DevPanel {
   private ctx: DevContext;
 
   // Proxy objects for lil-gui bindings
-  private cameraProxy = { x: 0, y: 0, z: 30, lx: 0, ly: 0, lz: 0 };
+  private cameraProxy = { x: 0, y: -20, z: 8, lx: 0, ly: 0, lz: 0 };
   private speedProxy = { timeScale: 1.0 };
 
   constructor(ctx: DevContext) {
@@ -37,6 +37,12 @@ export class DevPanel {
     this.buildEnemyStats();
     this.buildWaveEditor();
     this.buildSaveLoad();
+
+    // Top-level save button (always visible)
+    this.gui.add({ save: () => {
+      runtimeConfig.save();
+      this.refreshArchiveList();
+    } }, 'save').name('💾 SAVE CONFIG');
   }
 
   // ── UI Controls ───────────────────────────────────────────────────
@@ -64,38 +70,38 @@ export class DevPanel {
 
     folder.add({ triggerBomb: () => this.ctx.triggerBomb() }, 'triggerBomb').name('💣 Trigger Bomb');
 
-    // Camera position
-    const cam = this.ctx.cameraSystem.gameplayCamera;
-    this.cameraProxy.x = cam.position.x;
-    this.cameraProxy.y = cam.position.y;
-    this.cameraProxy.z = cam.position.z;
+    // Camera mode toggle (above position controls so user switches first)
+    const camModeProxy = { cinematic: false };
+    folder.add(camModeProxy, 'cinematic').name('Cinematic Camera').onChange((v: boolean) => {
+      if (v) this.ctx.cameraSystem.transitionToCinematic(0.5);
+      else this.ctx.cameraSystem.transitionToGameplay(0.5);
+    });
 
-    const camFolder = folder.addFolder('Camera Position');
+    // Cinematic camera position — init from current cinematic camera
+    const cineCam = this.ctx.cameraSystem.cinematicCamera;
+    this.cameraProxy.x = cineCam.position.x;
+    this.cameraProxy.y = cineCam.position.y;
+    this.cameraProxy.z = cineCam.position.z;
+
+    const camFolder = folder.addFolder('Cinematic Position');
     const updateCamPos = () => {
-      this.ctx.cameraSystem.setGameplayPosition(
+      this.ctx.cameraSystem.setCinematicPosition(
         this.cameraProxy.x, this.cameraProxy.y, this.cameraProxy.z,
       );
     };
     camFolder.add(this.cameraProxy, 'x', -50, 50, 0.5).name('Pos X').onChange(updateCamPos);
     camFolder.add(this.cameraProxy, 'y', -50, 50, 0.5).name('Pos Y').onChange(updateCamPos);
-    camFolder.add(this.cameraProxy, 'z', 1, 100, 0.5).name('Pos Z').onChange(updateCamPos);
+    camFolder.add(this.cameraProxy, 'z', 0.5, 100, 0.5).name('Pos Z').onChange(updateCamPos);
 
-    const lookFolder = folder.addFolder('Camera LookAt');
+    const lookFolder = folder.addFolder('Cinematic LookAt');
     const updateCamLook = () => {
-      this.ctx.cameraSystem.setGameplayLookAt(
+      this.ctx.cameraSystem.setCinematicLookAt(
         this.cameraProxy.lx, this.cameraProxy.ly, this.cameraProxy.lz,
       );
     };
     lookFolder.add(this.cameraProxy, 'lx', -30, 30, 0.5).name('Look X').onChange(updateCamLook);
     lookFolder.add(this.cameraProxy, 'ly', -30, 30, 0.5).name('Look Y').onChange(updateCamLook);
     lookFolder.add(this.cameraProxy, 'lz', -30, 30, 0.5).name('Look Z').onChange(updateCamLook);
-
-    // Camera mode toggle
-    const camModeProxy = { cinematic: false };
-    folder.add(camModeProxy, 'cinematic').name('Cinematic Camera').onChange((v: boolean) => {
-      if (v) this.ctx.cameraSystem.transitionToCinematic(0.5);
-      else this.ctx.cameraSystem.transitionToGameplay(0.5);
-    });
 
     folder.close();
   }
@@ -106,7 +112,18 @@ export class DevPanel {
     const folder = this.gui.addFolder('Time Control');
     this.speedProxy.timeScale = this.ctx.timeControl.timeScale;
 
-    folder.add(this.speedProxy, 'timeScale', [0.25, 0.33, 0.5, 1.0, 1.5, 2.0, 3.0])
+    const speedOptions: Record<string, number> = {
+      '⏸ Paused (0x)': 0,
+      '0.25x': 0.25,
+      '0.33x': 0.33,
+      '0.5x': 0.5,
+      '1x (Normal)': 1,
+      '1.5x': 1.5,
+      '2x': 2,
+      '3x': 3,
+    };
+
+    folder.add(this.speedProxy, 'timeScale', speedOptions)
       .name('Game Speed')
       .onChange((v: number) => {
         this.ctx.timeControl.timeScale = v;
@@ -182,12 +199,9 @@ export class DevPanel {
   }
 
   private rebuildWaveEntries(): void {
-    // Clear existing children
-    for (const child of [...this.waveFolder.children]) {
-      child.destroy();
-    }
-    for (const f of [...this.waveFolder.folders]) {
-      f.destroy();
+    // Clear all existing controllers and sub-folders
+    while (this.waveFolder.children.length > 0) {
+      this.waveFolder.children[this.waveFolder.children.length - 1]!.destroy();
     }
 
     const waves = runtimeConfig.waves;

@@ -18,6 +18,9 @@ export class CollisionManager {
   /** Callback to trigger screen-clear bomb visual. */
   public onBombTriggered: (() => void) | null = null;
 
+  /** Tracked setTimeout IDs for cleanup on scene exit. */
+  private pendingTimers = new Set<ReturnType<typeof setTimeout>>();
+
   update(
     player: Player,
     playerBullets: PlayerBulletSystem,
@@ -125,9 +128,11 @@ export class CollisionManager {
             enemyBullets.releaseAll();
             cameraSystem.transitionToCinematic(0.7);
             // Schedule return to gameplay camera
-            setTimeout(() => {
+            const timerId = setTimeout(() => {
+              this.pendingTimers.delete(timerId);
               cameraSystem.transitionToGameplay(0.7);
             }, 1500);
+            this.pendingTimers.add(timerId);
             this.onBombTriggered?.();
           } else {
             player.applyPowerup(pickup.type, playerBullets);
@@ -135,5 +140,13 @@ export class CollisionManager {
         }
       });
     }
+  }
+
+  /** Cancel all pending timers (call on scene exit). */
+  clearPendingTimers(): void {
+    for (const id of this.pendingTimers) {
+      clearTimeout(id);
+    }
+    this.pendingTimers.clear();
   }
 }

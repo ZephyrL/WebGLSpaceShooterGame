@@ -29,6 +29,11 @@ export class InputSystem {
 
   /** Bind to a canvas + camera for pointer-to-world conversion */
   bind(canvas: HTMLCanvasElement, camera: THREE.OrthographicCamera): void {
+    // Remove previous canvas listeners if already bound
+    if (this.canvas) {
+      this.unbindCanvas();
+    }
+
     this.camera = camera;
     this.canvas = canvas;
 
@@ -144,9 +149,29 @@ export class InputSystem {
     }
   }
 
+  /** Remove canvas listeners and reset pointer/drag state. Safe to call when no canvas is bound. */
+  unbindCanvas(): void {
+    if (this.canvas) {
+      this.canvas.removeEventListener('mousedown', this.onMouseDown);
+      this.canvas.removeEventListener('mousemove', this.onMouseMove);
+      this.canvas.removeEventListener('mouseup', this.onMouseUp);
+      this.canvas.removeEventListener('mouseleave', this.onMouseUp);
+      this.canvas.removeEventListener('touchstart', this.onTouchStart);
+      this.canvas.removeEventListener('touchmove', this.onTouchMove);
+      this.canvas.removeEventListener('touchend', this.onTouchEnd);
+      this.canvas.removeEventListener('touchcancel', this.onTouchEnd);
+      this.canvas = null;
+    }
+    this.camera = null;
+    this.isDragging = false;
+    this.pointerWorld = null;
+    this.keys.clear();
+    this.previousKeys.clear();
+  }
+
   dispose(): void {
     window.removeEventListener('keydown', this.onKeyDown);
     window.removeEventListener('keyup', this.onKeyUp);
-    // Canvas listeners are cleaned up if canvas is removed from DOM
+    this.unbindCanvas();
   }
 }

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { ObjectPool, Poolable } from '../engine/objectPool';
+import { ObjectPool, Poolable, warnPoolExhausted } from '../engine/objectPool';
 import { getGameConfig, getPowerupConfig } from '../dev/configBridge';
 import type { PowerupType } from '../dev/configBridge';
 import {
@@ -50,7 +50,7 @@ export class PowerupSystem {
     if (Math.random() > getPowerupConfig().dropChance) return;
 
     const pickup = this.pool.acquire();
-    if (!pickup) return;
+    if (!pickup) { warnPoolExhausted('Powerups'); return; }
 
     const type = POWERUP_TYPES[Math.floor(Math.random() * POWERUP_TYPES.length)]!;
     pickup.type = type;
@@ -63,6 +63,8 @@ export class PowerupSystem {
     pickup.mesh.material = newMesh.material;
 
     pickup.mesh.position.set(x, y, 0);
+    pickup.mesh.rotation.set(0, 0, 0);
+    pickup.mesh.scale.set(1, 1, 1);
     pickup.mesh.visible = true;
   }
 

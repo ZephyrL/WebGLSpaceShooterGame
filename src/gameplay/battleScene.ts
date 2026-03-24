@@ -55,6 +55,9 @@ export class BattleScene implements GameScene {
   private flashTimer = 0;
 
   private prepared = false;
+  private _resolvePrepared!: () => void;
+  /** Resolves when prepare() has completed. Safe to await multiple times. */
+  public readonly whenPrepared = new Promise<void>((r) => { this._resolvePrepared = r; });
 
   constructor(renderer: Renderer, cameraSystem: CameraSystem, input: InputSystem, sceneManager: SceneManager) {
     this.renderer = renderer;
@@ -144,6 +147,7 @@ export class BattleScene implements GameScene {
     this.debugLabels.addLabel(this.player.mesh, '[PLAYER SHIP]');
 
     this.prepared = true;
+    this._resolvePrepared();
   }
 
   enter(): void {
@@ -255,6 +259,8 @@ export class BattleScene implements GameScene {
   }
 
   exit(): void {
+    this.collisionManager.clearPendingTimers();
+    this.input.unbindCanvas();
     this.hud.detach();
     this.gameOverOverlay?.remove();
     this.gameOverOverlay = null;

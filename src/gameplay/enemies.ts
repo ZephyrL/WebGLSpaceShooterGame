@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { ObjectPool, Poolable } from '../engine/objectPool';
+import { ObjectPool, Poolable, warnPoolExhausted } from '../engine/objectPool';
 import { getGameConfig, getEnemyConfig } from '../dev/configBridge';
 import type { EnemyType, EnemyStats } from '../dev/configBridge';
 import { EnemyBulletSystem } from './enemyBullets';
@@ -68,7 +68,7 @@ export class EnemySystem {
   /** Spawn an enemy of the given type at a position. */
   spawn(type: EnemyType, x: number, y: number): void {
     const enemy = this.pool.acquire();
-    if (!enemy) return;
+    if (!enemy) { warnPoolExhausted('Enemies'); return; }
 
     const stats = getEnemyConfig()[type];
     enemy.type = type;
@@ -86,6 +86,8 @@ export class EnemySystem {
     enemy.mesh.material = newMesh.material;
 
     enemy.mesh.position.set(x, y, 0);
+    enemy.mesh.rotation.set(0, 0, 0);
+    enemy.mesh.scale.set(1, 1, 1);
     enemy.mesh.visible = true;
   }
 

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { ObjectPool, Poolable } from '../engine/objectPool';
+import { ObjectPool, Poolable, warnPoolExhausted } from '../engine/objectPool';
 import { getGameConfig, getEnemyBulletSpeed } from '../dev/configBridge';
 import { createEnemyBulletMesh } from '../engine/placeholderFactory';
 
@@ -35,7 +35,7 @@ export class EnemyBulletSystem {
   /** Fire a bullet from position in the given direction. */
   fire(x: number, y: number, dirX: number, dirY: number): void {
     const bullet = this.pool.acquire();
-    if (!bullet) return;
+    if (!bullet) { warnPoolExhausted('EnemyBullets'); return; }
     bullet.mesh.position.set(x, y, 0);
     // Normalise direction
     const len = Math.sqrt(dirX * dirX + dirY * dirY) || 1;

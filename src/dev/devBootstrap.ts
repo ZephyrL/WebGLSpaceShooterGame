@@ -7,7 +7,9 @@ import type { CameraSystem } from '../engine/cameraSystem';
  * Initialise the dev panel and wire it to the game systems.
  * Called once from main.ts, only in dev mode.
  */
-export function initDevPanel(battleScene: BattleScene, cameraSystem: CameraSystem): DevPanel {
+export async function initDevPanel(battleScene: BattleScene, cameraSystem: CameraSystem): Promise<DevPanel> {
+  await battleScene.whenPrepared;
+
   const devCtx = battleScene.getDevContext();
 
   const ctx: DevContext = {
