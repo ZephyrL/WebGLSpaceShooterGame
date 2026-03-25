@@ -74,6 +74,7 @@ hud:
     top_left_below: Pause button "| |"
     top_center_left: Timer (MM:SS)
     top_center: Active power-up name + remaining duration
+    top_center_below: "Shield: X.Xs" (cyan, when shield active) or "Shield: DEV ∞" (dev override)
     top_right: "Score: {n}"
     center: Wave announcement (temporary, ~2s)
 
@@ -93,6 +94,7 @@ powerups:
   shape: colored circles/diamonds
   types_observed:
     - Damage Boost (red circle, multiplies bullet damage)
+    - Shield (cyan torus-knot, grants 8s damage immunity, pulsing sphere visual)
   behavior: spawn during waves, float through play area
 
 waves:
@@ -118,6 +120,7 @@ dev_panel:
     - name: Debug Actions
       controls:
         - "Trigger Bomb (button) — kills all enemies instantly"
+        - "🛡 Immune Override (checkbox) — toggles permanent damage immunity with shield visual"
         - "Cinematic Camera (checkbox) — switches to 3D perspective view"
         - "Cinematic Position (Pos X/Y/Z sliders)"
         - "Cinematic LookAt (Look X/Y/Z sliders)"
@@ -238,3 +241,21 @@ test_results:
         - "Import JSON requires file dialog (untestable via Playwright)"
         - "lil-gui element IDs change after panel rebuild"
         - "lil-gui sliders not reliably manipulable via Playwright drag"
+    - date: 2026-03-25
+      focus: "Shield Powerup — new feature verification"
+      tests_run: 7
+      bugs_found: 0
+      console_errors: 0
+      console_warnings: 0
+      screenshots: 7
+      report: _test-results/shield-powerup-tests/TEST-REPORT.md
+      features_verified:
+        - "Shield pickup registered in powerup pool (code-verified)"
+        - "Dev Panel Immune Override checkbox in Debug Actions"
+        - "HUD 'Shield: DEV ∞' indicator when dev override active"
+        - "Damage immunity confirmed (HP unchanged through 15s combat)"
+        - "Shield toggle OFF removes indicator and restores vulnerability"
+        - "Powerup stacking (shield + multishot observed simultaneously)"
+        - "Zero JS runtime errors throughout session"
+      scores_achieved: [4200]
+      max_wave_reached: 11 (victory)

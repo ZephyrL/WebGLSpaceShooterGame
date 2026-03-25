@@ -17,6 +17,7 @@ export async function initDevPanel(battleScene: BattleScene, cameraSystem: Camer
     cameraSystem,
     hud: devCtx.hud,
     triggerBomb: () => battleScene.triggerBomb(),
+    player: devCtx.player,
   };
 
   return new DevPanel(ctx);

@@ -12,6 +12,7 @@ export interface DevContext {
   cameraSystem: CameraSystem;
   hud: HUD;
   triggerBomb: () => void;
+  player: { devImmuneOverride: boolean };
 }
 
 // ── DevPanel ──────────────────────────────────────────────────────────
@@ -69,6 +70,9 @@ export class DevPanel {
     const folder = this.gui.addFolder('Debug Actions');
 
     folder.add({ triggerBomb: () => this.ctx.triggerBomb() }, 'triggerBomb').name('💣 Trigger Bomb');
+
+    // Permanent shield override
+    folder.add(this.ctx.player, 'devImmuneOverride').name('🛡 Immune Override');
 
     // Camera mode toggle (above position controls so user switches first)
     const camModeProxy = { cinematic: false };

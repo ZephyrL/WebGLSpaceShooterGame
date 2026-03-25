@@ -10,6 +10,7 @@ export class HUD {
   private scoreEl: HTMLDivElement;
   private healthEl: HTMLDivElement;
   private powerupEl: HTMLDivElement;
+  private shieldEl: HTMLDivElement;
   private waveEl: HTMLDivElement;
   private pauseBtn: HTMLButtonElement;
   private timerEl: HTMLDivElement;
@@ -92,6 +93,15 @@ export class HUD {
     `;
     this.container.appendChild(this.powerupEl);
 
+    // Shield indicator (below powerup)
+    this.shieldEl = document.createElement('div');
+    this.shieldEl.style.cssText = `
+      position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
+      font-size: 16px; color: #00ffff; display: none;
+      text-shadow: 0 0 6px rgba(0,255,255,0.6);
+    `;
+    this.container.appendChild(this.shieldEl);
+
     // Wave indicator (centre)
     this.waveEl = document.createElement('div');
     this.waveEl.style.cssText = `
@@ -151,6 +161,20 @@ export class HUD {
     this.powerupEl.textContent = `${name}: ${info.remaining.toFixed(1)}s`;
   }
 
+  /** Update shield indicator. */
+  setShield(status: { remaining: number; isDev: boolean } | null): void {
+    if (!status) {
+      this.shieldEl.style.display = 'none';
+      return;
+    }
+    this.shieldEl.style.display = '';
+    if (status.isDev) {
+      this.shieldEl.textContent = 'Shield: DEV \u221E';
+    } else {
+      this.shieldEl.textContent = `Shield: ${status.remaining.toFixed(1)}s`;
+    }
+  }
+
   /** Show a wave announcement. */
   showWave(waveNumber: number): void {
     this.waveEl.textContent = `Wave ${waveNumber}`;
@@ -191,6 +215,7 @@ export class HUD {
     this.scoreEl.textContent = 'Score: 0';
     this.setHealth(maxHealth, maxHealth);
     this.setPowerup(null);
+    this.setShield(null);
     this.waveEl.style.opacity = '0';
     this.setSessionTime(0);
     this.showPauseButton();

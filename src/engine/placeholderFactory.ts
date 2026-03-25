@@ -88,6 +88,16 @@ export function createBombPickupMesh(): THREE.Mesh {
   return new THREE.Mesh(geometry, material);
 }
 
+export function createShieldPickupMesh(): THREE.Mesh {
+  const geometry = new THREE.TorusKnotGeometry(0.3, 0.1, 48, 8);
+  const material = new THREE.MeshStandardMaterial({
+    color: 0x00ffff,
+    emissive: 0x007777,
+    emissiveIntensity: 0.6,
+  });
+  return new THREE.Mesh(geometry, material);
+}
+
 /**
  * Debug label system — creates/shows/hides HTML text labels near entities.
  */

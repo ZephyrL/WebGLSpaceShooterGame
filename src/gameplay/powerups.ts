@@ -6,6 +6,7 @@ import {
   createMultishotPickupMesh,
   createDamageBoostPickupMesh,
   createBombPickupMesh,
+  createShieldPickupMesh,
 } from '../engine/placeholderFactory';
 
 /** A single power-up pickup entity. */
@@ -19,9 +20,10 @@ const meshFactories: Record<PowerupType, () => THREE.Mesh> = {
   multishot: createMultishotPickupMesh,
   damage_boost: createDamageBoostPickupMesh,
   bomb: createBombPickupMesh,
+  shield: createShieldPickupMesh,
 };
 
-const POWERUP_TYPES: PowerupType[] = ['multishot', 'damage_boost', 'bomb'];
+const POWERUP_TYPES: PowerupType[] = ['multishot', 'damage_boost', 'bomb', 'shield'];
 
 function createPickup(_index: number): PowerupPickup {
   return {

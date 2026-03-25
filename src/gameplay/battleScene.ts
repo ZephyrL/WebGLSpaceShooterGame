@@ -227,6 +227,7 @@ export class BattleScene implements GameScene {
     // HUD updates
     this.hud.setHealth(this.player.health, this.player.maxHealth);
     this.hud.setPowerup(this.player.getActivePowerup());
+    this.hud.setShield(this.player.getShieldStatus());
     this.hud.setSessionTime(this.timeControl.sessionElapsed);
     this.hud.update(effectiveDt);
 

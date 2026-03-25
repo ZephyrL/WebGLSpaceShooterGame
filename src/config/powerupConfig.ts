@@ -1,5 +1,5 @@
 /** Power-up type identifiers */
-export type PowerupType = 'multishot' | 'damage_boost' | 'bomb';
+export type PowerupType = 'multishot' | 'damage_boost' | 'bomb' | 'shield';
 
 /** Per-power-up-type configuration */
 export interface PowerupStats {
@@ -37,6 +37,11 @@ export const POWERUP_CONFIG = {
       duration: 0,
       color: 0xff0044,
       displayName: 'BOMB',
+    },
+    shield: {
+      duration: 8,
+      color: 0x00ffff,
+      displayName: 'Shield',
     },
   } satisfies Record<PowerupType, PowerupStats>,
 

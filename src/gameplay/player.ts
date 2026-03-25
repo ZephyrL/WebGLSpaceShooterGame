@@ -27,6 +27,13 @@ export class Player {
   private activePowerup: PowerupType | null = null;
   private powerupTimer = 0;
 
+  // Shield state (independent of activePowerup)
+  private shieldActive = false;
+  private shieldTimer = 0;
+  private shieldEffect: THREE.Mesh | null = null;
+  private shieldPulsePhase = 0;
+  public devImmuneOverride = false;
+
   // Cached config
   private fireInterval: number;
 
@@ -51,6 +58,10 @@ export class Player {
     this.fireCooldown = 0;
     this.activePowerup = null;
     this.powerupTimer = 0;
+    this.shieldActive = false;
+    this.shieldTimer = 0;
+    this.shieldPulsePhase = 0;
+    this.removeShieldEffect();
     this.mesh.visible = true;
     this.mesh.position.set(
       getPlayerConfig().initialPosition.x,
@@ -65,6 +76,7 @@ export class Player {
     this.handleFiring(dt, bulletSystem);
     this.handleInvincibility(dt);
     this.handlePowerupTimer(dt, bulletSystem);
+    this.handleShield(dt);
   }
 
   private handleMovement(dt: number, input: InputSystem): void {
@@ -156,9 +168,57 @@ export class Player {
     }
   }
 
+  private handleShield(dt: number): void {
+    if (this.shieldActive && !this.devImmuneOverride) {
+      this.shieldTimer -= dt;
+      if (this.shieldTimer <= 0) {
+        this.shieldActive = false;
+        this.shieldTimer = 0;
+        this.removeShieldEffect();
+        return;
+      }
+    }
+
+    // Pulse the shield visual
+    if (this.shieldActive || this.devImmuneOverride) {
+      this.shieldPulsePhase += dt * 4;
+      if (this.shieldEffect) {
+        const scale = 1.0 + 0.15 * Math.sin(this.shieldPulsePhase);
+        this.shieldEffect.scale.setScalar(scale);
+        (this.shieldEffect.material as THREE.MeshStandardMaterial).opacity =
+          0.25 + 0.15 * Math.sin(this.shieldPulsePhase);
+      } else {
+        this.addShieldEffect();
+      }
+    }
+  }
+
+  private addShieldEffect(): void {
+    const geometry = new THREE.SphereGeometry(1.2, 16, 12);
+    const material = new THREE.MeshStandardMaterial({
+      color: 0x00ffff,
+      emissive: 0x00ffff,
+      emissiveIntensity: 0.4,
+      transparent: true,
+      opacity: 0.3,
+      side: THREE.DoubleSide,
+    });
+    this.shieldEffect = new THREE.Mesh(geometry, material);
+    this.mesh.add(this.shieldEffect);
+  }
+
+  private removeShieldEffect(): void {
+    if (this.shieldEffect) {
+      this.mesh.remove(this.shieldEffect);
+      this.shieldEffect.geometry.dispose();
+      (this.shieldEffect.material as THREE.MeshStandardMaterial).dispose();
+      this.shieldEffect = null;
+    }
+  }
+
   /** Apply damage. Returns true if player died. */
   takeDamage(): boolean {
-    if (this.invincible) return false;
+    if (this.invincible || this.shieldActive || this.devImmuneOverride) return false;
 
     this.health -= 1;
     if (this.health <= 0) {
@@ -174,13 +234,21 @@ export class Player {
   }
 
   isInvincible(): boolean {
-    return this.invincible;
+    return this.invincible || this.shieldActive || this.devImmuneOverride;
   }
 
   /** Apply a power-up effect. */
   applyPowerup(type: PowerupType, bulletSystem: PlayerBulletSystem): void {
     if (type === 'bomb') {
       // Bomb is instant — handled externally
+      return;
+    }
+
+    if (type === 'shield') {
+      const stats = getPowerupConfig().types.shield;
+      this.shieldActive = true;
+      this.shieldTimer = stats.duration;
+      this.shieldPulsePhase = 0;
       return;
     }
 
@@ -199,6 +267,13 @@ export class Player {
     return { type: this.activePowerup, remaining: this.powerupTimer };
   }
 
+  /** Get shield status for HUD. */
+  getShieldStatus(): { remaining: number; isDev: boolean } | null {
+    if (this.devImmuneOverride) return { remaining: 0, isDev: true };
+    if (this.shieldActive) return { remaining: this.shieldTimer, isDev: false };
+    return null;
+  }
+
   /** Clear all active effects (for reset). */
   clearEffects(bulletSystem: PlayerBulletSystem): void {
     if (this.activePowerup === 'damage_boost') {
@@ -206,5 +281,8 @@ export class Player {
     }
     this.activePowerup = null;
     this.powerupTimer = 0;
+    this.shieldActive = false;
+    this.shieldTimer = 0;
+    this.removeShieldEffect();
   }
 }
