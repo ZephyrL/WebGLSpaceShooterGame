@@ -104,15 +104,85 @@ waves:
 
 dev_panel:
   present: true
+  library: lil-gui v0.21.0
   location: right side overlay
+  collapsible: true  # click arrow left of "Dev Panel" title
+  collapsed_label: "▸ Dev Panel"
+  file: src/dev/devPanel.ts
+  config_file: src/dev/runtimeConfig.ts
   sections:
-    - UI Controls
-    - Debug Actions
-    - Time Control
-    - Player Stats
-    - Enemy Stats
-    - Wave Editor
-    - "Save / Load (save config, reset, archive, export/import JSON)"
+    - name: UI Controls
+      controls:
+        - "Show HUD (checkbox) — toggles HP, Score, Timer, Wave display"
+        - "Debug Labels (checkbox) — BUG: non-functional, see bugs below"
+    - name: Debug Actions
+      controls:
+        - "Trigger Bomb (button) — kills all enemies instantly"
+        - "Cinematic Camera (checkbox) — switches to 3D perspective view"
+        - "Cinematic Position (Pos X/Y/Z sliders)"
+        - "Cinematic LookAt (Look X/Y/Z sliders)"
+    - name: Time Control
+      controls:
+        - "Game Speed (dropdown) — Paused(0x), 0.25x, 0.33x, 0.5x, 1x, 1.5x, 2x, 3x"
+    - name: Player Stats
+      controls:
+        - "Move Speed (slider, default: 12)"
+        - "Fire Rate (slider, default: 5)"
+        - "Starting Health (slider, default: 3, applies on restart)"
+        - "Invincibility (slider, default: 1.5s)"
+        - "Bullet Speed (slider, default: 25)"
+        - "Bullet Damage (slider, default: 1)"
+        - "Multi-Shot Offset (slider, default: 0.8)"
+    - name: Enemy Stats
+      controls:
+        - "drone: Health:1, MoveSpeed:5, PointValue:100, FireRate:0"
+        - "fighter: Health:2, MoveSpeed:4, PointValue:200, FireRate:1.2, SineAmp:4"
+        - "bomber: Health:4, MoveSpeed:2.5, PointValue:500, FireRate:0.6, SpreadAngle:30"
+        - "Enemy Bullet Speed (shared, default: 12)"
+    - name: Wave Editor
+      controls:
+        - "10 default waves, each expandable with Entry sub-folders"
+        - "+ Add Entry (button)"
+        - "+ Add Wave (button)"
+        - "🗑 Remove Entry (button)"
+    - name: "Save / Load"
+      controls:
+        - "💾 Save Config — saves to localStorage key 'spaceshooter_dev_config'"
+        - "🔄 Reset to Defaults — rebuilds panel with code defaults"
+        - "Archive dropdown — shows saved versions (v1, v2, ...)"
+        - "📂 Restore Archive — restores selected archive version"
+        - "📤 Export JSON — downloads 'spaceshooter-config-{timestamp}.json'"
+        - "📥 Import JSON — opens file picker (untestable via Playwright)"
+  bugs:
+    - id: devpanel-1
+      title: "Time Control GUI desync after restart"
+      severity: medium
+      status: open
+      description: >
+        After PLAY AGAIN, timeControl.timeScale resets to 1.0 but dropdown
+        still shows previous selection. speedProxy not re-synced.
+    - id: devpanel-2
+      title: "Debug Labels toggle non-functional"
+      severity: medium
+      status: open
+      description: >
+        DebugLabelSystem.enabled set once in constructor from
+        getGameConfig().debug.showLabels (default: false). Never updated
+        reactively. addLabel() returns early when !this.enabled.
+      file: src/engine/placeholderFactory.ts
+    - id: devpanel-3
+      title: "Textbox interaction may break pause (intermittent)"
+      severity: low
+      status: unconfirmed
+      description: >
+        Observed once: fill + Enter on lil-gui textbox unpaused game.
+        Could not reproduce on subsequent attempts.
+  interaction_notes:
+    - "lil-gui <select> uses text labels as option values (e.g. '⏸ Paused (0x)')"
+    - "Playwright selectOption({ label: '...' }) works for dropdowns"
+    - "After panel rebuild (Reset/Restore/Import), all element IDs change"
+    - "Sliders are best manipulated via page.evaluate() not click/drag"
+    - "Use dynamic element discovery, not hardcoded aria-labelledby IDs"
 
 test_results:
   sessions:
@@ -143,3 +213,28 @@ test_results:
       notes: >
         Game is quite challenging for automated play. Zigzag movement
         patterns help survival. Dev Panel available for debug overrides.
+    - date: 2026-03-25
+      focus: "Dev Panel — all sections, buttons, controllers"
+      tests_run: 35
+      bugs_found: 2  # confirmed; 1 intermittent unconfirmed
+      console_errors: 0
+      console_warnings: 0
+      screenshots: 19
+      report: _test-results/devpanel-tests/TEST-REPORT.md
+      features_verified:
+        - "Time Control: all 8 speed settings (0x through 3x)"
+        - "UI Controls: Show HUD toggle"
+        - "Debug Actions: Trigger Bomb, Cinematic Camera, Position/LookAt"
+        - "Player Stats: all 7 sliders with correct defaults"
+        - "Enemy Stats: 3 types (drone, fighter, bomber) with correct values"
+        - "Wave Editor: add entry, add wave, remove entry"
+        - "Save/Load: save, reset, archive, restore, export"
+        - "Panel collapse/expand with state preservation"
+      bugs_reported:
+        - "devpanel-1: Time Control GUI desync after restart"
+        - "devpanel-2: Debug Labels toggle non-functional"
+        - "devpanel-3: Textbox may break pause (intermittent, unconfirmed)"
+      known_limitations:
+        - "Import JSON requires file dialog (untestable via Playwright)"
+        - "lil-gui element IDs change after panel rebuild"
+        - "lil-gui sliders not reliably manipulable via Playwright drag"
