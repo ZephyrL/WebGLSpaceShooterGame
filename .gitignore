@@ -26,3 +26,6 @@ tsconfig.tsbuildinfo
 # OS
 .DS_Store
 Thumbs.db
+
+# Test results (AI agent test artifacts — screenshots, logs)
+_test-results/

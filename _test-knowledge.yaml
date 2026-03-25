@@ -1,0 +1,145 @@
+# Test Knowledge: WebGL Spacecraft Shooting Game
+# Auto-maintained by AI agent after each test session.
+# Last updated: 2026-03-25
+
+project:
+  name: webgl-spacecraft-shooting-game
+  path: webgl-spacecraft-shooting-game/
+  entry: src/main.ts
+  bundler: vite
+  dev_command: "npm run dev"
+  dev_url: "http://localhost:5173/"
+  framework: three.js (r170)
+  rendering: WebGL2 (OpenGL ES 3.0)
+  test_output_dir: _test-results/   # gitignored, screenshots & logs
+
+scenes:
+  start:
+    file: src/gameplay/startScene.ts
+    type: 2D HTML overlay
+    elements:
+      - heading: "SPACECRAFT SHOOTER"
+      - subtitle: "WebGL 3D Demo"
+      - button: "START GAME"  # triggers transition to loading
+      - button: "SETTINGS"    # placeholder
+    triggers:
+      - click START GAME button
+      - press Space key
+      - press Enter key
+
+  loading:
+    file: src/gameplay/loadingScene.ts
+    type: 2D HTML overlay
+    behavior: auto-transitions to battle after resources load
+    user_interaction: none
+
+  battle:
+    file: src/gameplay/battleScene.ts
+    type: 3D WebGL scene
+    systems:
+      - player (src/gameplay/player.ts)
+      - enemies (src/gameplay/enemies.ts)
+      - playerBullets (src/gameplay/playerBullets.ts)
+      - enemyBullets (src/gameplay/enemyBullets.ts)
+      - powerups (src/gameplay/powerups.ts)
+      - waveManager (src/gameplay/waveManager.ts)
+      - collisionManager (src/gameplay/collisionManager.ts)
+      - hud (src/gameplay/hud.ts)
+      - pauseMenu (src/gameplay/pauseMenu.ts)
+
+  game_over:
+    type: 2D HTML overlay (within battle scene)
+    elements:
+      - heading: "GAME OVER"
+      - text: "Final Score: {score}"
+      - button: "PLAY AGAIN"  # restarts battle
+
+controls:
+  keyboard:
+    movement:
+      - W / ArrowUp: move up
+      - S / ArrowDown: move down
+      - A / ArrowLeft: move left
+      - D / ArrowRight: move right
+    pause: Escape (edge-triggered, may not register via Playwright)
+    start_game: Space or Enter (from start screen)
+  mouse:
+    drag: hold mouse button + move → player follows pointer (lerp-smoothed)
+    priority: mouse/touch overrides keyboard when active
+  firing: automatic (continuous, cooldown-based, no key needed)
+
+hud:
+  layout:
+    top_left: "HP: ❤❤❤" (heart emojis, full=❤ empty=♡)
+    top_left_below: Pause button "| |"
+    top_center_left: Timer (MM:SS)
+    top_center: Active power-up name + remaining duration
+    top_right: "Score: {n}"
+    center: Wave announcement (temporary, ~2s)
+
+player:
+  shape: blue triangle
+  health: 3 HP
+  invincibility: brief flash after taking damage
+  speed: clamped to play area bounds
+  fire_rate: cooldown-based automatic
+
+enemies:
+  shape: red squares (various sizes)
+  behavior: spawn from top, move downward
+  types: multiple (configured in src/config/enemyConfig.ts)
+
+powerups:
+  shape: colored circles/diamonds
+  types_observed:
+    - Damage Boost (red circle, multiplies bullet damage)
+  behavior: spawn during waves, float through play area
+
+waves:
+  manager: src/gameplay/waveManager.ts
+  config: src/config/waveConfig.ts
+  progression: Wave 1 → 2 → 3 → ... (observed up to Wave 4)
+  victory: all waves complete + no enemies remaining
+  defeat: player HP reaches 0
+
+dev_panel:
+  present: true
+  location: right side overlay
+  sections:
+    - UI Controls
+    - Debug Actions
+    - Time Control
+    - Player Stats
+    - Enemy Stats
+    - Wave Editor
+    - "Save / Load (save config, reset, archive, export/import JSON)"
+
+test_results:
+  sessions:
+    - date: 2026-03-25
+      tests_run: 14
+      errors_found: 0
+      console_errors: 0  # only favicon 404, expected
+      scores_achieved: [300, 700, 900, 1100]
+      max_wave_reached: 4
+      features_verified:
+        - start screen rendering
+        - scene transitions (start → loading → battle)
+        - WASD keyboard movement
+        - Arrow key movement
+        - diagonal movement
+        - mouse drag movement
+        - auto-fire system
+        - damage/HP system
+        - power-up pickup and display
+        - wave progression
+        - game over screen
+        - restart via PLAY AGAIN
+        - WebGL2 context active
+        - zero JS runtime errors
+      known_limitations:
+        - ESC pause does not trigger reliably via Playwright keyboard API
+        - HUD pause button hidden behind Game Over overlay
+      notes: >
+        Game is quite challenging for automated play. Zigzag movement
+        patterns help survival. Dev Panel available for debug overrides.
